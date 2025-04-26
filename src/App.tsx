@@ -1,34 +1,30 @@
-import React, { useEffect, useState } from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { useAuth } from './hooks/useAuth';
 import Navbar from './components/Navbar';
 import ItemGrid from './components/ItemGrid';
 import AddItemForm from './components/AddItemForm';
 import UserProfile from './components/UserProfile';
-import { supabase } from './supabaseClient';
+import Auth from './components/Auth';
 
-const App: React.FC = () => {
-  const [items, setItems] = useState([]);
+const App = () => {
+  const { user, loading } = useAuth();
 
-  useEffect(() => {
-    const fetchItems = async () => {
-      const { data } = await supabase.from('items').select('id, title, price, description, image_url');
-      setItems(data || []);
-    };
-    fetchItems();
-  }, []);
+  if (loading) {
+    return <div className="text-center p-4">Loading...</div>;
+  }
 
   return (
     <Router>
-      <div className="App">
+      <div className="min-h-screen bg-gray-100">
         <Navbar />
-        <Routes>
-          <Route path="/" element={<ItemGrid />} />
-          <Route path="/add-item" element={<AddItemForm />} />
-        </Routes>
-        <div>
-          <input type="text" placeholder="Search items..." />
-        </div>
-        <UserProfile />
+        <main className="container mx-auto py-4">
+          <Routes>
+            <Route path="/" element={<ItemGrid />} />
+            <Route path="/add-item" element={user ? <AddItemForm /> : <Auth />} />
+            <Route path="/profile" element={user ? <UserProfile /> : <Auth />} />
+            <Route path="/auth" element={<Auth />} />
+          </Routes>
+        </main>
       </div>
     </Router>
   );
